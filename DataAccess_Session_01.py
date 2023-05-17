@@ -1,12 +1,19 @@
+'''
+Reference:
+https://learn.microsoft.com/en-us/sql/connect/python/pyodbc/step-3-proof-of-concept-connecting-to-sql-using-pyodbc?view=sql-server-ver16
+https://hevodata.com/learn/python-sql-server-integration/
+'''
+
 import pyodbc
 cnxn_str = ("Driver={SQL Server Native Client 11.0};"
             "Server=BHAVIN;"
             "Database=LearningDB;"
             "Trusted_Connection=yes;")
 cnxn = pyodbc.connect(cnxn_str)
+cursor  =cnxn.cursor()
 
-cnxn.cursor.execute("SELECT @@version;")
-row = cnxn.cursor.fetchone()
+cursor.execute("SELECT @@version;")
+row = cursor.fetchone()
 while row:
     print(row[0])
-    row = cnxn.cursor.fetchone()
+    row = cursor.fetchone()

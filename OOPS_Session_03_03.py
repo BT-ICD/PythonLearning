@@ -3,7 +3,6 @@ To get a string representation of an object using __str__ method
 References:
 
 '''
-import json
 class Rectangle:
     def __init__(self, length=0, width=0):
         self.length = length
@@ -31,9 +30,7 @@ class Rectangle:
     def perimeter (self):
         return 2* (self.length+ self.width)
     def __str__(self):
-        # return f"{self.length},{self.width}"
-        strData = json.dumps(self.__dict__)
-        return  strData
+        return f"{self.length},{self.width}"
 r1 = Rectangle(10,20);
 print('Area: ',r1.area())
 print('Perimeter: ',r1.perimeter())

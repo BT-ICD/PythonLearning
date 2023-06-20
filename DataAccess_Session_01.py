@@ -18,5 +18,5 @@ while row:
     print(row[0])
     row = cursor.fetchone()
 # to insert a record
-cnxn.execute("Insert into Student values (201,'Taru','Satellite','15-Dec-2000','1231231231')")
+cnxn.execute("Insert into Student values (202,'Taru','Satellite','15-Dec-2000','1231231231')")
 cnxn.commit()

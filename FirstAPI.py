@@ -85,6 +85,20 @@ async def addStudent(student:StudentDB):
     session.refresh(s1)
     result = StudentDB.from_orm(s1)
     return result
+@app.put("/student/edit/{id}", response_model=StudentDB)
+async def editStudent(id:int, student:StudentDB):
+    s1 = session.query(Student).filter(Student.ID == id).first();
+    if(s1!=None):
+        s1.SName= student.SName
+        s1.Area=student.Area
+        s1.Phone = student.Phone
+        session.commit()
+        session.refresh(s1)
+        s2= StudentDB.from_orm(s1)
+        return s2
+    else:
+        print("Invalid Student Id")
+        return None
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)

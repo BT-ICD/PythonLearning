@@ -1,21 +1,27 @@
 import uvicorn
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import  Column,  Integer, String
 from sqlalchemy.orm import sessionmaker
 import urllib
+from pydantic import  BaseModel
 
 from fastapi import FastAPI
 
-app = FastAPI()
+
+# conn = urllib.parse.quote_plus(
+#     'Data Source Name=MssqlDataSource;'
+#     'Driver={SQL Server};'
+#     'Server=Bhavin;'
+#     'Database=LearningDB;'
+#     'Trusted_connection=yes;'
+# )
 conn = urllib.parse.quote_plus(
-    'Data Source Name=MssqlDataSource;'
     'Driver={SQL Server};'
     'Server=Bhavin;'
     'Database=LearningDB;'
     'Trusted_connection=yes;'
 )
-
 try:
 
     engine = create_engine('mssql+pyodbc:///?odbc_connect={}'.format(conn))
@@ -33,20 +39,52 @@ class Student(Base):
     SName = Column(String)
     Area = Column(String)
     Phone = Column(String)
-@app.get("/")
-async def root():
+
+class StudentDB(BaseModel):
+    ID:int
+    SName:str
+    Area:str|None
+    Phone:str|None
+    class Config:
+        orm_mode=True
+
+app = FastAPI()
+
+@app.get("/student/", response_model=list[StudentDB])
+async def getList():
     students = session.query(Student).all();
     return students
 
-@app.get("/{id}")
-async def getById(id:int):
+@app.get("/student/byid/{id}",response_model=StudentDB)
+async def getById(id:int ):
     student = session.query(Student).filter(Student.ID==id).first();
-    return student
+    print(student)
+    s1 = StudentDB.from_orm(student)
+    print(s1)
+    return s1
 
-@app.get("/item")
-async def getItems():
-    return {"message": "From items"}
+@app.get("/student/byname/{sname}",response_model=list[StudentDB])
+async def getByName(sname:str):
+    students = session.query(Student).filter(Student.SName==sname).all();
+    # print(student)
+    # s1 = StudentDB.from_orm(student)
+    # print(s1)
+    return students
+# @app.get("/item")
+# async def getItems():
+#     return {"message": "From items"}
 
+@app.post("/student/add", response_model=StudentDB)
+async def addStudent(student:StudentDB):
+    s1=Student() #Object of DB Model
+    s1.SName= student.SName
+    s1.Area = student.Area
+    s1.Phone = student.Phone
+    session.add(s1)
+    session.commit()
+    session.refresh(s1)
+    result = StudentDB.from_orm(s1)
+    return result
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)

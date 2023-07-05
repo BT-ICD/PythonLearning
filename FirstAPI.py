@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 import urllib
 from pydantic import  BaseModel
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 
 # conn = urllib.parse.quote_plus(
@@ -88,17 +88,25 @@ async def addStudent(student:StudentDB):
 @app.put("/student/edit/{id}", response_model=StudentDB)
 async def editStudent(id:int, student:StudentDB):
     s1 = session.query(Student).filter(Student.ID == id).first();
-    if(s1!=None):
-        s1.SName= student.SName
-        s1.Area=student.Area
-        s1.Phone = student.Phone
-        session.commit()
-        session.refresh(s1)
-        s2= StudentDB.from_orm(s1)
-        return s2
-    else:
-        print("Invalid Student Id")
-        return None
+    if not s1:
+        raise HTTPException(status_code=404, detail="Student not found")
+
+    s1.SName= student.SName
+    s1.Area=student.Area
+    s1.Phone = student.Phone
+    session.commit()
+    session.refresh(s1)
+    s2= StudentDB.from_orm(s1)
+    return s2
+
+@app.delete("/student/{id}")
+def delete_student(id:int):
+    s1 = session.query(Student).filter(Student.ID == id).first();
+    if not s1:
+        raise HTTPException(status_code=404, detail="Student not found")
+    session.delete(s1)
+    session.commit()
+    return {"Ok":True}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)
